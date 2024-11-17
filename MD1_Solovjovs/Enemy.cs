@@ -18,38 +18,88 @@ namespace MD1_Solovjovs
 
     public class Enemy
     {
-        private static Random random = new Random();
+        private static readonly Random random = new Random();
         private static bool textureIsLoaded = false;
         private static readonly Texture texture = new Texture();
         private static readonly string pathToTexture = "enemy.png";
-        // Once again, could be adjustable but egh :/
+        
         private static float HALF_SIZE = 0.75f;
         public static readonly float MAX_X = 8f;
         public static readonly float MAX_Y = 4.5f;
+        private static readonly int MAX_REGENARTIONS = 2; // As per homework
 
-        public float POS_X { get; set; }
-        public float POS_Y { get; set; }
-        private int POS_Z = 0;
+        private float _pos_x;
+        private float _pos_y;
 
-        private float speed = 0.01f;
+        public float POS_X { 
+            get { return _pos_x; } 
+            set
+            {
+                if (value > MAX_X)
+                {
+                    _pos_x = MAX_X;
+                }
+                else if (value < -MAX_X)
+                {
+                    _pos_x = -MAX_X;
+                }
+                else
+                {
+                    _pos_x = value;
+                }
+            } 
+        }
+
+        public float POS_Y
+        {
+            get { return _pos_y; }
+            set
+            {
+                if (value > MAX_Y)
+                {
+                    _pos_y = MAX_Y;
+                }
+                else if (value < -MAX_Y)
+                {
+                    _pos_y = -MAX_Y;
+                }
+                else
+                {
+                    _pos_y = value;
+                }
+            }
+        }
+        private readonly int POS_Z = 0;
+
+        private float speed;
         private int difficultyLevel = 1;
 
-        private int bossRespawn = 0;
+        private int bossRespawnedTimes = 0;
+        private int defenceRegeneratedTimes = 0;
+
         private List<Defence> defences = new List<Defence>();
 
         private OpenGL gl;
 
-        public bool IsBoss { get; } = false;
-        public bool IsReadyToJoin { get; set; } = false;
+        public bool IsBoss { get; }
+        public bool IsReadyToJoin { get; set; }
 
-        public Enemy(OpenGL gl, float? x, float? y, int difficultyLevel, bool readyToJoingFight = false, bool isBoss = false, float speed = 0.004f)
+        public Enemy(
+            OpenGL gl, 
+            float? x = null, 
+            float? y = null, 
+            int difficultyLevel = 1, 
+            bool readyToJoingFight = false, 
+            bool isBoss = false, 
+            float speed = 0.004f
+        )
         {
             this.gl = gl;
             this.difficultyLevel = difficultyLevel;
             this.speed = MakeSpeedMoreRandom(( speed <= 0 || speed >= 0.05f) ? 0.004f : speed);
             IsBoss = isBoss;
             IsReadyToJoin = readyToJoingFight;
-            GenerateDefenceCombos();
+           
             if (!textureIsLoaded)
             {
                 texture.Create(gl, pathToTexture);
@@ -66,6 +116,7 @@ namespace MD1_Solovjovs
                 this.POS_X = (float)x;
                 this.POS_Y = (float)y;
             }
+            GenerateDefenceCombos();
         }
 
         private float MakeSpeedMoreRandom(float speed)
@@ -119,6 +170,7 @@ namespace MD1_Solovjovs
                 defences.Add(randomDefence);
             }
         }
+
         public void Render(int difficultyLevel = 1)
         {
             gl.Enable(OpenGL.GL_TEXTURE_2D);
@@ -131,8 +183,8 @@ namespace MD1_Solovjovs
             gl.Begin(OpenGL.GL_QUADS);
             // BL
             if (IsBoss){
-                gl.Color(0f, 1f, 0f);
-                HALF_SIZE = 1f;
+                gl.Color(0f, 1f, 0f); // Blends with the texture and makes boss appear special
+                HALF_SIZE = 1f; // Makes boss larger
             };
             gl.TexCoord(1, 1);
             gl.Vertex(-HALF_SIZE, -HALF_SIZE, 0);
@@ -142,6 +194,8 @@ namespace MD1_Solovjovs
             gl.Vertex(HALF_SIZE, HALF_SIZE, 0);
             gl.TexCoord(0, 1);
             gl.Vertex(HALF_SIZE, -HALF_SIZE, 0);
+
+            // Reset these back
             gl.Color(0f, 0f, 0f);
             HALF_SIZE = 0.75f;
             gl.End();
@@ -160,7 +214,6 @@ namespace MD1_Solovjovs
             float length = (float)Math.Sqrt(deltaX * deltaX + deltaY * deltaY);
             float normalizedX = deltaX / length;
             float normalizedY = deltaY / length;
-
             float moveX = normalizedX * speed;
             float moveY = normalizedY * speed;
             POS_X += moveX;
@@ -224,11 +277,11 @@ namespace MD1_Solovjovs
                 int MULTIPLIER_FOR_LEVEL = difficultyLevel;
                 int MULTIPLIER_FOR_KILLING_BOSS = IsBoss ? 5 : 1;
 
-                if (IsBoss && bossRespawn < difficultyLevel - 1)
+                if (IsBoss && defenceRegeneratedTimes < MAX_REGENARTIONS)
                 {
                     GenerateDefenceCombos();
-                    bossRespawn += 1;
-                    return 0;
+                    defenceRegeneratedTimes += 1;
+                    return -1; // special code to give SOME points for getting the 1st line of defence
                 }
                 return BASE_POINTS_PER_KILL * MULTIPLIER_FOR_LEVEL * MULTIPLIER_FOR_KILLING_BOSS;
             }

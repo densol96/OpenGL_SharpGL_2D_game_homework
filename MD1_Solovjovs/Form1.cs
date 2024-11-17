@@ -1,40 +1,43 @@
 ﻿using SharpGL;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace MD1_Solovjovs
 {
     public partial class Form1 : Form
     {
-
-        private OpenGL gl;
+        // CONSTANTS
         private readonly int DISTANCE_FROM_CAMERA = -10;
+        private readonly int?[] enemiesPerLevel = { null, 5, 10, 15 };
+        private readonly int FINAL_LEVEL = 3;
+        private readonly float PLAYER_REACH_THRESHOLD = 0.5f;
+
+        // FOR INIT IN APP
+        private OpenGL gl;
         private Timer enemySpawnTimer;
 
         private Player player;
         private List<Enemy> enemies;
         private LivesPanel livesPanel;
 
-        private readonly int FINAL_LEVEL = 3;  
+        // STATS
         private int level = 1;
         private int score = 0;
         private int killedEnemiesTotal = 0;
-        private readonly float PLAYER_REACH_THRESHOLD = 0.5f;
 
+        // GAME STATES
         private bool gameOver = false;
         private bool gameFirstOpen = true;
 
         public Form1()
         {
            InitializeComponent();
-           AfterInit();
+           AfterFormInit();
         }
 
-        private void AfterInit()
+        private void AfterFormInit()
         {
             welcomeLabel.Parent = openGLControl1;
             welcomeLabel.BackColor = Color.Transparent;
@@ -56,6 +59,29 @@ namespace MD1_Solovjovs
 
             bossLabel.Parent = openGLControl1;
             bossLabel.BackColor = Color.Transparent;
+        }
+
+        private void openGLControl1_OpenGLInitialized(object sender, EventArgs e)
+        {
+            gl = this.openGLControl1.OpenGL;
+            gl.ClearColor(0.6f, 0.9f, 0.6f, 1.0f);
+        }
+
+        private void openGLControl1_OpenGLDraw(object sender, SharpGL.RenderEventArgs args)
+        {
+            gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
+            if (!gameFirstOpen && !gameOver)
+            {
+                GameOn();
+            }
+        }
+
+        private void openGLControl1_KeyDown(object sender, KeyEventArgs e)
+        {
+            if ((gameOver | gameFirstOpen) && e.KeyCode == Keys.Space)
+            {
+                SetGame();
+            }
         }
 
         public void SetGame()
@@ -84,12 +110,14 @@ namespace MD1_Solovjovs
             purpleBtn.Visible = true; 
             blueBtn.Visible = true;
             pressRestartLabel.Visible = false;
+            scoreLabel.Text = $"SCORE: {score}";
+            levelLabel.Text = $"LEVEL: {level}";
         }
 
         private void EnemiesSetUp()
         {
-            // First 4 enemies with hard-coded coords to come ffrom all 4 sides on a new level
-            // I have logic inside Enemy class to increase speed depending on the level with a bit of random as well
+            // First 4 enemies with hard-coded coords to come from all 4 sides on a new level
+            // I have logic inside Enemy class to increase speed depending on the level with a bit of randomness as well
             Enemy top = new Enemy(gl, 0, Enemy.MAX_Y, level, true);
             Enemy bottom = new Enemy(gl, 0, -Enemy.MAX_Y, level, true);
             Enemy left = new Enemy(gl, -Enemy.MAX_X, 0, level, true);
@@ -99,33 +127,22 @@ namespace MD1_Solovjovs
             enemies.Add(left);
             enemies.Add(right);
 
-            // And additional enemies that will be appering ar random coords every second
-            // (Count dependent on the current level. The higher the level - the more enemies are spawned)
-            for(int i = 0; i < CalcEnemyCountPerLevel(); i++)
+            // And additional enemies that will be appearing ar random coords every second
+            // Count dependent on the current level. The higher the level, the more enemies are spawned)
+            for (int i = 0; i < CalcEnemyCountPerLevel(); i++)
             {
-                // I use in-class logic to work with speed depending on the level
+                // I use in-class logic to work with speed depending on the level and assign random coords
                 enemies.Add(new Enemy(gl, null, null, level, false));
             }
-
             // Add a BOSS at the very end
-            enemies.Add(new Enemy(gl, null, null, level + 1, false, true));
+            enemies.Add(new Enemy(gl, null, null, level, false, true));
         }
 
         private int CalcEnemyCountPerLevel()
         {
             // For now I will go with 3 levels alltogether cause I will also add BOSSES
             // Also it will less take time for a Lecturer to test the game
-            switch (level)
-            {
-                case 1:
-                    return 5;
-                case 2:
-                    return 10;
-                case 3:
-                    return 15;
-                default:
-                    return 0;
-            }
+            return enemiesPerLevel[level] != null ? (int)enemiesPerLevel[level]: 5;
         }
 
         private void TimerSetUp()
@@ -143,10 +160,7 @@ namespace MD1_Solovjovs
             enemySpawnTimer.Start();
         }
 
-        /* I guess starting a new thread and stopping it there, would be an option as well.
-         * But I come from a JS background and I am more used to async / await
-         */
-        private async void TimerActionToAddEnemy(object sender, EventArgs e)
+        private void TimerActionToAddEnemy(object sender, EventArgs e)
         {   
             foreach(Enemy enemy in enemies)
             {
@@ -158,19 +172,11 @@ namespace MD1_Solovjovs
                 if (enemies.Count == 1 && enemy.IsBoss && !enemy.IsReadyToJoin)
                 {
                     bossLabel.Visible = true;
-                    await Task.Delay(3000);
+                    Application.DoEvents(); // Makes sure that label update is rendered before I pause the main thread
+                    System.Threading.Thread.Sleep(3000); // A little bit of time to indicate that boss is coming
                     bossLabel.Visible = false;
                     enemy.IsReadyToJoin = true;
                 }
-            }
-        }
-
-        private void openGLControl1_OpenGLDraw(object sender, SharpGL.RenderEventArgs args)
-        {
-            gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
-            if (!gameFirstOpen && !gameOver)
-            {
-                GameOn();
             }
         }
 
@@ -206,25 +212,34 @@ namespace MD1_Solovjovs
         {
             foreach (Enemy enemy in enemies)
             {
+                // IsReadyToJoin -> practically means that enemy has already joined the fight (it is being rendered on the screen)
                 if (enemy.IsReadyToJoin)
                 {
                     float dx = enemy.POS_X - player.POS_X;
                     float dy = enemy.POS_Y - player.POS_Y;
-                    // Math.Sqrt is more expensive to compute than *
+                    // Math.Sqrt(x^2) is more expensive to compute than x*x
                     if (dx * dx + dy * dy <= PLAYER_REACH_THRESHOLD * PLAYER_REACH_THRESHOLD)
                     {
-
-                        if(enemy.IsBoss)
+                       /* It doesn't make sense that simply colliding with the boss causes him to die and you to win.
+                        * Similarly, with defense regenerating, the boss should additionally respawn once upon colliding 
+                        * with the player, each time deducting 2 lives. This means the only way to win against the final 
+                        * level 3 boss by colliding with him twice is to keep all 5 lives throughout the rest of the game.
+                        */
+                        if (enemy.IsBoss)
                         {
                             player.Lives -= 2;
                         } 
                         else {
                             player.Lives -= 1;
                         }
-
+                        // TODO [ ]: Implement additional respawn for the boss
                         RemoveEnemy(enemy);
 
                         if (player.Lives == 0)
+                        {
+                            EndGame();
+                        }
+                        else if(enemies.Count == 0)
                         {
                             EndGame();
                         }
@@ -251,22 +266,6 @@ namespace MD1_Solovjovs
             purpleBtn.Visible = false;
             gameOverLabel.Visible = true;
             pressRestartLabel.Visible = true;
-        }
-
-        private void openGLControl1_OpenGLInitialized(object sender, EventArgs e)
-        {
-            gl = this.openGLControl1.OpenGL;
-            //gl.ClearColor(0.5f, 0.8f, 1.0f, 1.0f); // blue
-            gl.ClearColor(0.6f, 0.9f, 0.6f, 1.0f);
-            
-        }
-
-        private void openGLControl1_KeyDown(object sender, KeyEventArgs e)
-        {
-            if ((gameOver | gameFirstOpen) && e.KeyCode == Keys.Space)
-            {
-                SetGame();
-            }
         }
 
         private void yellowBtn_Click(object sender, EventArgs e)
@@ -298,14 +297,19 @@ namespace MD1_Solovjovs
                 if(enemy.IsReadyToJoin)
                 {
                     int pointsForKill = enemy.GetHit(color);
-                    if (pointsForKill > 0)
+                    if (pointsForKill > 0) // Died
                     {
                         killedEnemies.Add(enemy);
                         score += pointsForKill;
                         scoreLabel.Text = $"SCORE: {score}";
                     }
+                    else if(pointsForKill == -1) // -1 if Boss regenerated the 1st line of defence
+                    {
+                        score += 10; // at least some points for the 1st line of defence
+                        scoreLabel.Text = $"SCORE: {score}";
+                    }
+                    // 0 points means no effect
                 }
-                
             }
 
             killedEnemiesTotal += killedEnemies.Count;

@@ -12,7 +12,7 @@ namespace MD1_Solovjovs
 
         public readonly int POS_X = 0;
         public readonly int POS_Y = 0;
-        private readonly int POS_Z = 0;
+        private static readonly int POS_Z = 0;
 
         public int Lives { get; set; } = 5;
 

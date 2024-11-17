@@ -1,20 +1,17 @@
 ﻿using SharpGL;
 using SharpGL.SceneGraph.Assets;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace MD1_Solovjovs
 {
     public class LivesPanel
     {
+        // Made this static so I only load the texture 1 (makes the app less buggy)
         private static bool textureIsLoaded = false;
         private static readonly Texture texture = new Texture();
         private static readonly string pathToTexture = "heart.png";
+        
 
-        // These could be made adjustable in a constructor, but egh :/
         private readonly float POS_X_START = -8.5f;
         private readonly float POS_Y_START = 5.5f;
         private readonly float size = 0.6f;
