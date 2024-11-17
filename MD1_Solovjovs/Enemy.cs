@@ -26,8 +26,8 @@ namespace MD1_Solovjovs
         public static readonly float MAX_X = 8f;
         public static readonly float MAX_Y = 4.5f;
 
-        private float POS_X;
-        private float POS_Y; 
+        public float POS_X { get; set; }
+        public float POS_Y { get; set; }
         private int POS_Z = 0;
 
         private float speed = 0.01f;
@@ -37,11 +37,16 @@ namespace MD1_Solovjovs
 
         private OpenGL gl;
 
-        public Enemy(OpenGL gl, float? x, float? y, int difficultyLevel, float speed = 0.004f)
+        public bool IsBoss { get; } = false;
+        public bool IsReadyToJoin { get; set; } = false;
+
+        public Enemy(OpenGL gl, float? x, float? y, int difficultyLevel, bool readyToJoingFight = false, bool isBoss = false, float speed = 0.004f)
         {
             this.gl = gl;
             this.difficultyLevel = difficultyLevel;
             this.speed = MakeSpeedMoreRandom(( speed <= 0 || speed >= 0.05f) ? 0.004f : speed);
+            IsBoss = isBoss;
+            IsReadyToJoin = readyToJoingFight;
             GenerateDefenceCombos();
             if (!textureIsLoaded)
             {

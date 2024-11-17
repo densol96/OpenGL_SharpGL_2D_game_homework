@@ -10,11 +10,11 @@ namespace MD1_Solovjovs
         private static readonly Texture texture = new Texture();
         private static readonly string pathToTexture = "player.png";
 
-        private readonly int POS_X = 0;
-        private readonly int POS_Y = 0;
+        public readonly int POS_X = 0;
+        public readonly int POS_Y = 0;
         private readonly int POS_Z = 0;
 
-        private int lives = 5;
+        public int Lives { get; set; } = 5;
 
         // Keep a reference
         private OpenGL gl;
@@ -27,8 +27,6 @@ namespace MD1_Solovjovs
                 textureIsLoaded = true;
             }
         }
-
-        public int getLives() { return lives; }
 
         public void Render()
         {
