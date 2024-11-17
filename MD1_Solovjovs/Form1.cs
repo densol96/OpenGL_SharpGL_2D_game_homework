@@ -1,11 +1,8 @@
 ﻿using SharpGL;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -22,9 +19,10 @@ namespace MD1_Solovjovs
         private List<Enemy> enemies;
         private LivesPanel livesPanel;
 
-
+        private readonly int FINAL_LEVEL = 3;  
         private int level = 1;
         private int score = 0;
+        private int killedEnemiesTotal = 0;
         private readonly float PLAYER_REACH_THRESHOLD = 0.5f;
 
         private bool gameOver = false;
@@ -55,6 +53,9 @@ namespace MD1_Solovjovs
 
             pressRestartLabel.Parent = openGLControl1;
             pressRestartLabel.BackColor = Color.Transparent;
+
+            bossLabel.Parent = openGLControl1;
+            bossLabel.BackColor = Color.Transparent;
         }
 
         public void SetGame()
@@ -107,7 +108,7 @@ namespace MD1_Solovjovs
             }
 
             // Add a BOSS at the very end
-            enemies.Add(new Enemy(gl, null, null, level, false, true));
+            enemies.Add(new Enemy(gl, null, null, level + 1, false, true));
         }
 
         private int CalcEnemyCountPerLevel()
@@ -142,9 +143,26 @@ namespace MD1_Solovjovs
             enemySpawnTimer.Start();
         }
 
-        private void TimerActionToAddEnemy(object sender, EventArgs e)
-        {
-            enemies.Add(new Enemy(gl, null, null, level));
+        /* I guess starting a new thread and stopping it there, would be an option as well.
+         * But I come from a JS background and I am more used to async / await
+         */
+        private async void TimerActionToAddEnemy(object sender, EventArgs e)
+        {   
+            foreach(Enemy enemy in enemies)
+            {
+                if (!enemy.IsBoss && !enemy.IsReadyToJoin)
+                {
+                    enemy.IsReadyToJoin = true;
+                    break;
+                }
+                if (enemies.Count == 1 && enemy.IsBoss && !enemy.IsReadyToJoin)
+                {
+                    bossLabel.Visible = true;
+                    await Task.Delay(3000);
+                    bossLabel.Visible = false;
+                    enemy.IsReadyToJoin = true;
+                }
+            }
         }
 
         private void openGLControl1_OpenGLDraw(object sender, SharpGL.RenderEventArgs args)
@@ -156,7 +174,7 @@ namespace MD1_Solovjovs
             }
         }
 
-            private void GameOn()
+        private void GameOn()
         {
             gl.LoadIdentity();
             gl.PushMatrix();
@@ -176,6 +194,10 @@ namespace MD1_Solovjovs
         private void RenderEnemies()
         {
             foreach(Enemy enemy in enemies) {
+                if(!enemy.IsReadyToJoin)
+                {
+                    break;
+                }
                 enemy.Render();
             }
         }
@@ -184,20 +206,39 @@ namespace MD1_Solovjovs
         {
             foreach (Enemy enemy in enemies)
             {
-                float dx = enemy.POS_X - player.POS_X;
-                float dy = enemy.POS_Y - player.POS_Y;
-                // Math.Sqrt is more expensive to compute than *
-                if (dx * dx + dy * dy <= PLAYER_REACH_THRESHOLD * PLAYER_REACH_THRESHOLD)
+                if (enemy.IsReadyToJoin)
                 {
-                    player.Lives -= 1;
-                    enemies.Remove(enemy);
-                    if(player.Lives == 0)
+                    float dx = enemy.POS_X - player.POS_X;
+                    float dy = enemy.POS_Y - player.POS_Y;
+                    // Math.Sqrt is more expensive to compute than *
+                    if (dx * dx + dy * dy <= PLAYER_REACH_THRESHOLD * PLAYER_REACH_THRESHOLD)
                     {
-                        EndGame();
+
+                        if(enemy.IsBoss)
+                        {
+                            player.Lives -= 2;
+                        } 
+                        else {
+                            player.Lives -= 1;
+                        }
+
+                        RemoveEnemy(enemy);
+
+                        if (player.Lives == 0)
+                        {
+                            EndGame();
+                        }
+                        break;
                     }
-                    break;
                 }
             }
+        }
+
+        private void RemoveEnemy(Enemy enemy)
+        {
+            enemySpawnTimer.Stop();
+            enemies.Remove(enemy);
+            enemySpawnTimer.Start();
         }
 
         private void EndGame()
@@ -226,6 +267,73 @@ namespace MD1_Solovjovs
             {
                 SetGame();
             }
+        }
+
+        private void yellowBtn_Click(object sender, EventArgs e)
+        {
+            HitEnemy(Defence.YELLOW);
+        }
+
+        private void redBtn_Click(object sender, EventArgs e)
+        {
+            HitEnemy(Defence.RED);
+        }
+
+        private void blueBtn_Click(object sender, EventArgs e)
+        {
+            HitEnemy(Defence.BLUE);
+        }
+
+        private void purpleBtn_Click(object sender, EventArgs e)
+        {
+            HitEnemy(Defence.PURPLE);
+        }
+
+        private void HitEnemy(Defence color)
+        {
+            List<Enemy> killedEnemies = new List<Enemy>();
+
+            foreach(Enemy enemy in enemies)
+            {
+                if(enemy.IsReadyToJoin)
+                {
+                    int pointsForKill = enemy.GetHit(color);
+                    if (pointsForKill > 0)
+                    {
+                        killedEnemies.Add(enemy);
+                        score += pointsForKill;
+                        scoreLabel.Text = $"SCORE: {score}";
+                    }
+                }
+                
+            }
+
+            killedEnemiesTotal += killedEnemies.Count;
+
+            enemySpawnTimer.Stop();
+            foreach (Enemy killedEnemy in killedEnemies)
+            {
+                enemies.Remove(killedEnemy);
+            }
+            enemySpawnTimer.Start();
+
+            if (enemies.Count == 0 && level < FINAL_LEVEL)
+            {
+                LevelUp();
+            }
+            else if (enemies.Count == 0 && level == FINAL_LEVEL)
+            {
+                EndGame();
+            }
+        }
+
+        private void LevelUp()
+        {
+            level += 1;
+            levelLabel.Text = $"LEVEL: {level}";
+            enemySpawnTimer.Stop();
+            EnemiesSetUp();
+            enemySpawnTimer.Start();
         }
     }
 }

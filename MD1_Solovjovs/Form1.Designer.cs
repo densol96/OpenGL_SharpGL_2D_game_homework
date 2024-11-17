@@ -41,6 +41,7 @@ namespace MD1_Solovjovs
             this.pressSpaceLabel = new System.Windows.Forms.Label();
             this.welcomeLabel = new System.Windows.Forms.Label();
             this.pressRestartLabel = new System.Windows.Forms.Label();
+            this.bossLabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.openGLControl1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -91,6 +92,7 @@ namespace MD1_Solovjovs
             this.yellowBtn.TabIndex = 6;
             this.yellowBtn.UseVisualStyleBackColor = false;
             this.yellowBtn.Visible = false;
+            this.yellowBtn.Click += new System.EventHandler(this.yellowBtn_Click);
             // 
             // redBtn
             // 
@@ -101,6 +103,7 @@ namespace MD1_Solovjovs
             this.redBtn.TabIndex = 6;
             this.redBtn.UseVisualStyleBackColor = false;
             this.redBtn.Visible = false;
+            this.redBtn.Click += new System.EventHandler(this.redBtn_Click);
             // 
             // blueBtn
             // 
@@ -111,6 +114,7 @@ namespace MD1_Solovjovs
             this.blueBtn.TabIndex = 6;
             this.blueBtn.UseVisualStyleBackColor = false;
             this.blueBtn.Visible = false;
+            this.blueBtn.Click += new System.EventHandler(this.blueBtn_Click);
             // 
             // purpleBtn
             // 
@@ -121,6 +125,7 @@ namespace MD1_Solovjovs
             this.purpleBtn.TabIndex = 6;
             this.purpleBtn.UseVisualStyleBackColor = false;
             this.purpleBtn.Visible = false;
+            this.purpleBtn.Click += new System.EventHandler(this.purpleBtn_Click);
             // 
             // gameOverLabel
             // 
@@ -164,6 +169,17 @@ namespace MD1_Solovjovs
             this.pressRestartLabel.Text = "PRESS SPACE TO START AGAIN";
             this.pressRestartLabel.Visible = false;
             // 
+            // bossLabel
+            // 
+            this.bossLabel.AutoSize = true;
+            this.bossLabel.Font = new System.Drawing.Font("Press Start 2P", 40F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.bossLabel.Location = new System.Drawing.Point(363, 140);
+            this.bossLabel.Name = "bossLabel";
+            this.bossLabel.Size = new System.Drawing.Size(518, 74);
+            this.bossLabel.TabIndex = 7;
+            this.bossLabel.Text = "BOSS TIME";
+            this.bossLabel.Visible = false;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -171,6 +187,7 @@ namespace MD1_Solovjovs
             this.ClientSize = new System.Drawing.Size(1232, 825);
             this.Controls.Add(this.pressRestartLabel);
             this.Controls.Add(this.pressSpaceLabel);
+            this.Controls.Add(this.bossLabel);
             this.Controls.Add(this.welcomeLabel);
             this.Controls.Add(this.gameOverLabel);
             this.Controls.Add(this.purpleBtn);
@@ -201,6 +218,7 @@ namespace MD1_Solovjovs
         private System.Windows.Forms.Label pressSpaceLabel;
         private System.Windows.Forms.Label welcomeLabel;
         private System.Windows.Forms.Label pressRestartLabel;
+        private System.Windows.Forms.Label bossLabel;
     }
 }
 

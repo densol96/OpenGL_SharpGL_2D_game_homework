@@ -2,6 +2,7 @@
 using SharpGL;
 using System;
 using System.Collections.Generic;
+using System.Windows.Forms;
 
 namespace MD1_Solovjovs
 {
@@ -22,7 +23,7 @@ namespace MD1_Solovjovs
         private static readonly Texture texture = new Texture();
         private static readonly string pathToTexture = "enemy.png";
         // Once again, could be adjustable but egh :/
-        private static readonly float HALF_SIZE = 0.75f;
+        private static float HALF_SIZE = 0.75f;
         public static readonly float MAX_X = 8f;
         public static readonly float MAX_Y = 4.5f;
 
@@ -32,7 +33,8 @@ namespace MD1_Solovjovs
 
         private float speed = 0.01f;
         private int difficultyLevel = 1;
-        
+
+        private int bossRespawn = 0;
         private List<Defence> defences = new List<Defence>();
 
         private OpenGL gl;
@@ -128,6 +130,10 @@ namespace MD1_Solovjovs
             gl.Translate(POS_X, POS_Y, POS_Z);
             gl.Begin(OpenGL.GL_QUADS);
             // BL
+            if (IsBoss){
+                gl.Color(0f, 1f, 0f);
+                HALF_SIZE = 1f;
+            };
             gl.TexCoord(1, 1);
             gl.Vertex(-HALF_SIZE, -HALF_SIZE, 0);
             gl.TexCoord(1, 0);
@@ -136,6 +142,8 @@ namespace MD1_Solovjovs
             gl.Vertex(HALF_SIZE, HALF_SIZE, 0);
             gl.TexCoord(0, 1);
             gl.Vertex(HALF_SIZE, -HALF_SIZE, 0);
+            gl.Color(0f, 0f, 0f);
+            HALF_SIZE = 0.75f;
             gl.End();
             gl.PopMatrix();
             gl.Disable(OpenGL.GL_BLEND);
@@ -187,7 +195,6 @@ namespace MD1_Solovjovs
                 {
                     gl.Color(0.5f, 0.0f, 0.5f);
                 }
-
                 // BL
                 gl.TexCoord(1, 1);
                 gl.Vertex(-COMBO_HALF_SIZE, -COMBO_HALF_SIZE, 0);
@@ -201,6 +208,31 @@ namespace MD1_Solovjovs
                 gl.PopMatrix();
                 gl.Color(1.0f, 1.0f, 1.0f);
             }
+        }
+
+        // Returns Points Per Kill
+        public int GetHit(Defence color)
+        {
+            
+            if (defences.Count > 0 && defences[0] == color)
+            {
+                defences.RemoveAt(0);
+            }
+            if(defences.Count == 0)
+            {
+                int BASE_POINTS_PER_KILL = 10;
+                int MULTIPLIER_FOR_LEVEL = difficultyLevel;
+                int MULTIPLIER_FOR_KILLING_BOSS = IsBoss ? 5 : 1;
+
+                if (IsBoss && bossRespawn < difficultyLevel - 1)
+                {
+                    GenerateDefenceCombos();
+                    bossRespawn += 1;
+                    return 0;
+                }
+                return BASE_POINTS_PER_KILL * MULTIPLIER_FOR_LEVEL * MULTIPLIER_FOR_KILLING_BOSS;
+            }
+            return 0;
         }
     }
 }
