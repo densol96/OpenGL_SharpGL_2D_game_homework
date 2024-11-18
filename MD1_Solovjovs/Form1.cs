@@ -6,6 +6,12 @@ using System.Windows.Forms;
 
 namespace MD1_Solovjovs
 {
+
+    enum GameResult
+    {
+        WON, LOST
+    }
+
     public partial class Form1 : Form
     {
         // CONSTANTS
@@ -35,6 +41,7 @@ namespace MD1_Solovjovs
         {
            InitializeComponent();
            AfterFormInit();
+           MusicController.Loop("loop.mp3");
         }
 
         private void AfterFormInit()
@@ -59,6 +66,12 @@ namespace MD1_Solovjovs
 
             bossLabel.Parent = openGLControl1;
             bossLabel.BackColor = Color.Transparent;
+
+            totalKilledLabel.Parent = openGLControl1;
+            totalKilledLabel.BackColor = Color.Transparent;
+
+            resultLabel.Parent = openGLControl1;
+            resultLabel.BackColor = Color.Transparent;
         }
 
         private void openGLControl1_OpenGLInitialized(object sender, EventArgs e)
@@ -93,6 +106,7 @@ namespace MD1_Solovjovs
             enemies = new List<Enemy>();
             level = 1;
             score = 0;
+            killedEnemiesTotal = 0;
             LabelSetUp();
             EnemiesSetUp();
             TimerSetUp();
@@ -105,13 +119,16 @@ namespace MD1_Solovjovs
             welcomeLabel.Visible = false;
             scoreLabel.Visible = true;
             levelLabel.Visible = true;
+            totalKilledLabel.Visible = true;
             redBtn.Visible = true;
             yellowBtn.Visible = true;   
             purpleBtn.Visible = true; 
             blueBtn.Visible = true;
             pressRestartLabel.Visible = false;
+            resultLabel.Visible = false;
             scoreLabel.Text = $"SCORE: {score}";
             levelLabel.Text = $"LEVEL: {level}";
+            totalKilledLabel.Text = $"TOTAL KILLED: {killedEnemiesTotal}";
         }
 
         private void EnemiesSetUp()
@@ -171,6 +188,7 @@ namespace MD1_Solovjovs
                 }
                 if (enemies.Count == 1 && enemy.IsBoss && !enemy.IsReadyToJoin)
                 {
+                    MusicController.PlaySound("boss.wav");
                     bossLabel.Visible = true;
                     Application.DoEvents(); // Makes sure that label update is rendered before I pause the main thread
                     System.Threading.Thread.Sleep(3000); // A little bit of time to indicate that boss is coming
@@ -220,11 +238,12 @@ namespace MD1_Solovjovs
                     // Math.Sqrt(x^2) is more expensive to compute than x*x
                     if (dx * dx + dy * dy <= PLAYER_REACH_THRESHOLD * PLAYER_REACH_THRESHOLD)
                     {
-                       /* It doesn't make sense that simply colliding with the boss causes him to die and you to win.
-                        * Similarly, with defense regenerating, the boss should additionally respawn once upon colliding 
-                        * with the player, each time deducting 2 lives. This means the only way to win against the final 
-                        * level 3 boss by colliding with him twice is to keep all 5 lives throughout the rest of the game.
-                        */
+                        /* It doesn't make sense that simply colliding with the boss causes him to die and you to win.
+                         * Similarly, with defense regenerating, the boss should additionally respawn once upon colliding 
+                         * with the player, each time deducting 2 lives. This means the only way to win against the final 
+                         * level 3 boss by colliding with him twice is to keep all 5 lives throughout the rest of the game.
+                         */
+                        MusicController.PlaySound("collided.wav");
                         if (enemy.IsBoss)
                         {
                             player.Lives -= 2;
@@ -232,16 +251,26 @@ namespace MD1_Solovjovs
                         else {
                             player.Lives -= 1;
                         }
-                        // TODO [ ]: Implement additional respawn for the boss
-                        RemoveEnemy(enemy);
-
-                        if (player.Lives == 0)
+                        
+                        // If 1st time, boss respawns
+                        bool result = enemy.DieOnCollide(enemies); // Player gets no points for this
+                        if(result)
                         {
-                            EndGame();
+                            killedEnemiesTotal += 1;
+                            totalKilledLabel.Text = $"TOTAL KILLED: {killedEnemiesTotal}";
                         }
-                        else if(enemies.Count == 0)
+
+                        if (player.Lives <= 0)
                         {
-                            EndGame();
+                            EndGame(GameResult.LOST);
+                        }
+                        else if (enemies.Count == 0 && level < FINAL_LEVEL)
+                        {
+                            LevelUp();
+                        }
+                        else if (enemies.Count == 0 && level == FINAL_LEVEL)
+                        {
+                            EndGame(GameResult.WON);
                         }
                         break;
                     }
@@ -249,14 +278,7 @@ namespace MD1_Solovjovs
             }
         }
 
-        private void RemoveEnemy(Enemy enemy)
-        {
-            enemySpawnTimer.Stop();
-            enemies.Remove(enemy);
-            enemySpawnTimer.Start();
-        }
-
-        private void EndGame()
+        private void EndGame(GameResult result)
         {
             gameOver = true;
             enemySpawnTimer.Stop();
@@ -266,6 +288,17 @@ namespace MD1_Solovjovs
             purpleBtn.Visible = false;
             gameOverLabel.Visible = true;
             pressRestartLabel.Visible = true;
+            resultLabel.Visible = true;
+            if (result == GameResult.WON)
+            {
+                resultLabel.Text = "YOU WON";
+                MusicController.PlaySound("won.wav");
+            }
+            else
+            {
+                resultLabel.Text = "YOU LOST";
+                MusicController.PlaySound("lost.wav");
+            }
         }
 
         private void yellowBtn_Click(object sender, EventArgs e)
@@ -290,6 +323,8 @@ namespace MD1_Solovjovs
 
         private void HitEnemy(Defence color)
         {
+            MusicController.PlaySound("btn.wav");
+
             List<Enemy> killedEnemies = new List<Enemy>();
 
             foreach(Enemy enemy in enemies)
@@ -302,6 +337,7 @@ namespace MD1_Solovjovs
                         killedEnemies.Add(enemy);
                         score += pointsForKill;
                         scoreLabel.Text = $"SCORE: {score}";
+                        MusicController.PlaySound("kill.wav");
                     }
                     else if(pointsForKill == -1) // -1 if Boss regenerated the 1st line of defence
                     {
@@ -313,13 +349,12 @@ namespace MD1_Solovjovs
             }
 
             killedEnemiesTotal += killedEnemies.Count;
+            totalKilledLabel.Text = $"TOTAL KILLED: {killedEnemiesTotal}";
 
-            enemySpawnTimer.Stop();
             foreach (Enemy killedEnemy in killedEnemies)
             {
                 enemies.Remove(killedEnemy);
             }
-            enemySpawnTimer.Start();
 
             if (enemies.Count == 0 && level < FINAL_LEVEL)
             {
@@ -327,7 +362,7 @@ namespace MD1_Solovjovs
             }
             else if (enemies.Count == 0 && level == FINAL_LEVEL)
             {
-                EndGame();
+                EndGame(GameResult.WON);
             }
         }
 
@@ -335,9 +370,8 @@ namespace MD1_Solovjovs
         {
             level += 1;
             levelLabel.Text = $"LEVEL: {level}";
-            enemySpawnTimer.Stop();
             EnemiesSetUp();
-            enemySpawnTimer.Start();
+            MusicController.PlaySound("lvl.wav");
         }
     }
 }

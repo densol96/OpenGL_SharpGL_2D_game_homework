@@ -28,6 +28,8 @@ namespace MD1_Solovjovs
         public static readonly float MAX_Y = 4.5f;
         private static readonly int MAX_REGENARTIONS = 2; // As per homework
 
+        private static int BASE_POINTS_PER_KILL = 10;
+
         private float _pos_x;
         private float _pos_y;
 
@@ -74,7 +76,7 @@ namespace MD1_Solovjovs
         private float speed;
         private int difficultyLevel = 1;
 
-        private int bossRespawnedTimes = 0;
+        private int bossRespawnedTimes = 1;
         private int defenceRegeneratedTimes = 0;
 
         private List<Defence> defences = new List<Defence>();
@@ -122,7 +124,7 @@ namespace MD1_Solovjovs
         private float MakeSpeedMoreRandom(float speed)
         {
             // Want to make speed slightly more random with difficulty level + to make them come at different speed
-            float minSpeed = speed;
+            float minSpeed = speed + (difficultyLevel - 1) * 0.015f;
             float maxSpeed = minSpeed + difficultyLevel * 0.015f;
             float randomSpeed = (float)(random.NextDouble() * (maxSpeed - minSpeed) + minSpeed);
             return randomSpeed;
@@ -131,10 +133,10 @@ namespace MD1_Solovjovs
         private void RandomlySelectPosition()
         {
             Array allSideOptions = Enum.GetValues(typeof(Side));
-            Side randomLevel = (Side)allSideOptions.GetValue(random.Next(allSideOptions.Length));
+            Side randomSide = (Side)allSideOptions.GetValue(random.Next(allSideOptions.Length));
             float randomX;
             float randomY;
-            switch (randomLevel)
+            switch (randomSide)
             {
                 case Side.TOP:
                     randomY = MAX_Y;
@@ -186,14 +188,31 @@ namespace MD1_Solovjovs
                 gl.Color(0f, 1f, 0f); // Blends with the texture and makes boss appear special
                 HALF_SIZE = 1f; // Makes boss larger
             };
-            gl.TexCoord(1, 1);
-            gl.Vertex(-HALF_SIZE, -HALF_SIZE, 0);
-            gl.TexCoord(1, 0);
-            gl.Vertex(-HALF_SIZE, HALF_SIZE, 0);
-            gl.TexCoord(0, 0);
-            gl.Vertex(HALF_SIZE, HALF_SIZE, 0);
-            gl.TexCoord(0, 1);
-            gl.Vertex(HALF_SIZE, -HALF_SIZE, 0);
+
+            // Uzbruceji no dazadam pusem tiek atbilstosi atteloti
+            if (POS_X <= 0)
+            {
+                gl.TexCoord(1, 1);
+                gl.Vertex(-HALF_SIZE, -HALF_SIZE, 0);
+                gl.TexCoord(1, 0);
+                gl.Vertex(-HALF_SIZE, HALF_SIZE, 0);
+                gl.TexCoord(0, 0);
+                gl.Vertex(HALF_SIZE, HALF_SIZE, 0);
+                gl.TexCoord(0, 1);
+                gl.Vertex(HALF_SIZE, -HALF_SIZE, 0);
+            }
+            else
+            {
+                gl.TexCoord(1, 1);
+                gl.Vertex(HALF_SIZE, -HALF_SIZE, 0);
+                gl.TexCoord(1, 0);
+                gl.Vertex(HALF_SIZE, HALF_SIZE, 0);
+                gl.TexCoord(0, 0);
+                gl.Vertex(-HALF_SIZE, HALF_SIZE, 0);
+                gl.TexCoord(0, 1);
+                gl.Vertex(-HALF_SIZE, -HALF_SIZE, 0);
+            }
+
 
             // Reset these back
             gl.Color(0f, 0f, 0f);
@@ -266,26 +285,34 @@ namespace MD1_Solovjovs
         // Returns Points Per Kill
         public int GetHit(Defence color)
         {
-            
             if (defences.Count > 0 && defences[0] == color)
             {
                 defences.RemoveAt(0);
             }
             if(defences.Count == 0)
             {
-                int BASE_POINTS_PER_KILL = 10;
-                int MULTIPLIER_FOR_LEVEL = difficultyLevel;
-                int MULTIPLIER_FOR_KILLING_BOSS = IsBoss ? 5 : 1;
-
                 if (IsBoss && defenceRegeneratedTimes < MAX_REGENARTIONS)
                 {
                     GenerateDefenceCombos();
                     defenceRegeneratedTimes += 1;
                     return -1; // special code to give SOME points for getting the 1st line of defence
                 }
-                return BASE_POINTS_PER_KILL * MULTIPLIER_FOR_LEVEL * MULTIPLIER_FOR_KILLING_BOSS;
+                return BASE_POINTS_PER_KILL * difficultyLevel * (IsBoss ? 5 : 1);
             }
             return 0;
+        }
+
+        public bool DieOnCollide(List<Enemy> enemies)
+        {
+            // Need to create a method inside enemy to check if boss, and if yes, respawn it once
+            if(IsBoss && bossRespawnedTimes < MAX_REGENARTIONS)
+            {
+                bossRespawnedTimes += 1;
+                RandomlySelectPosition();
+                return false;
+            }
+            enemies.Remove(this);
+            return true;
         }
     }
 }
