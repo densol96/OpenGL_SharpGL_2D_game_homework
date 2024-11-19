@@ -44,6 +44,9 @@ namespace MD1_Solovjovs
             this.bossLabel = new System.Windows.Forms.Label();
             this.totalKilledLabel = new System.Windows.Forms.Label();
             this.resultLabel = new System.Windows.Forms.Label();
+            this.recordLabel = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.newRecordBeatLbl = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.openGLControl1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -67,7 +70,7 @@ namespace MD1_Solovjovs
             // 
             this.levelLabel.AutoSize = true;
             this.levelLabel.Font = new System.Drawing.Font("Consolas", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.levelLabel.Location = new System.Drawing.Point(400, 27);
+            this.levelLabel.Location = new System.Drawing.Point(317, 27);
             this.levelLabel.Name = "levelLabel";
             this.levelLabel.Size = new System.Drawing.Size(134, 32);
             this.levelLabel.TabIndex = 1;
@@ -78,7 +81,7 @@ namespace MD1_Solovjovs
             // 
             this.scoreLabel.AutoSize = true;
             this.scoreLabel.Font = new System.Drawing.Font("Consolas", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.scoreLabel.Location = new System.Drawing.Point(844, 27);
+            this.scoreLabel.Location = new System.Drawing.Point(779, 27);
             this.scoreLabel.Name = "scoreLabel";
             this.scoreLabel.Size = new System.Drawing.Size(134, 32);
             this.scoreLabel.TabIndex = 1;
@@ -186,7 +189,7 @@ namespace MD1_Solovjovs
             // 
             this.totalKilledLabel.AutoSize = true;
             this.totalKilledLabel.Font = new System.Drawing.Font("Consolas", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.totalKilledLabel.Location = new System.Drawing.Point(558, 27);
+            this.totalKilledLabel.Location = new System.Drawing.Point(488, 27);
             this.totalKilledLabel.Name = "totalKilledLabel";
             this.totalKilledLabel.Size = new System.Drawing.Size(239, 32);
             this.totalKilledLabel.TabIndex = 1;
@@ -204,6 +207,39 @@ namespace MD1_Solovjovs
             this.resultLabel.Text = "YOU LOST";
             this.resultLabel.Visible = false;
             // 
+            // recordLabel
+            // 
+            this.recordLabel.AutoSize = true;
+            this.recordLabel.Font = new System.Drawing.Font("Consolas", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.recordLabel.Location = new System.Drawing.Point(972, 27);
+            this.recordLabel.Name = "recordLabel";
+            this.recordLabel.Size = new System.Drawing.Size(149, 32);
+            this.recordLabel.TabIndex = 1;
+            this.recordLabel.Text = "Record: 0";
+            this.recordLabel.Visible = false;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Consolas", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.Location = new System.Drawing.Point(972, -35);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(209, 32);
+            this.label1.TabIndex = 1;
+            this.label1.Text = "NEW RECORD!!!";
+            this.label1.Visible = false;
+            // 
+            // newRecordBeatLbl
+            // 
+            this.newRecordBeatLbl.AutoSize = true;
+            this.newRecordBeatLbl.Font = new System.Drawing.Font("Consolas", 35F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.newRecordBeatLbl.Location = new System.Drawing.Point(455, 343);
+            this.newRecordBeatLbl.Name = "newRecordBeatLbl";
+            this.newRecordBeatLbl.Size = new System.Drawing.Size(362, 55);
+            this.newRecordBeatLbl.TabIndex = 7;
+            this.newRecordBeatLbl.Text = "NEW RECORD!!!";
+            this.newRecordBeatLbl.Visible = false;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -211,6 +247,7 @@ namespace MD1_Solovjovs
             this.ClientSize = new System.Drawing.Size(1232, 825);
             this.Controls.Add(this.pressRestartLabel);
             this.Controls.Add(this.pressSpaceLabel);
+            this.Controls.Add(this.newRecordBeatLbl);
             this.Controls.Add(this.bossLabel);
             this.Controls.Add(this.welcomeLabel);
             this.Controls.Add(this.resultLabel);
@@ -220,6 +257,8 @@ namespace MD1_Solovjovs
             this.Controls.Add(this.redBtn);
             this.Controls.Add(this.yellowBtn);
             this.Controls.Add(this.totalKilledLabel);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.recordLabel);
             this.Controls.Add(this.scoreLabel);
             this.Controls.Add(this.levelLabel);
             this.Controls.Add(this.openGLControl1);
@@ -247,6 +286,9 @@ namespace MD1_Solovjovs
         private System.Windows.Forms.Label bossLabel;
         private System.Windows.Forms.Label totalKilledLabel;
         private System.Windows.Forms.Label resultLabel;
+        private System.Windows.Forms.Label recordLabel;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label newRecordBeatLbl;
     }
 }
 

@@ -33,7 +33,7 @@ namespace MD1_Solovjovs
                 Source = new Uri(filepath, UriKind.RelativeOrAbsolute),
                 LoadedBehavior = MediaState.Manual,
                 UnloadedBehavior = MediaState.Manual,
-                Volume = 0.2
+                Volume = 0.5
             };
 
             mediaElementForLoop.MediaEnded += (s, e) =>

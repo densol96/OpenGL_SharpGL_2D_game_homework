@@ -72,6 +72,12 @@ namespace MD1_Solovjovs
 
             resultLabel.Parent = openGLControl1;
             resultLabel.BackColor = Color.Transparent;
+
+            recordLabel.Parent = openGLControl1;
+            recordLabel.BackColor = Color.Transparent;
+
+            newRecordBeatLbl.Parent = openGLControl1;
+            newRecordBeatLbl.BackColor = Color.Transparent;
         }
 
         private void openGLControl1_OpenGLInitialized(object sender, EventArgs e)
@@ -129,6 +135,9 @@ namespace MD1_Solovjovs
             scoreLabel.Text = $"SCORE: {score}";
             levelLabel.Text = $"LEVEL: {level}";
             totalKilledLabel.Text = $"TOTAL KILLED: {killedEnemiesTotal}";
+            recordLabel.Text = $"RECORD: {DataManager.GetRecord()}";
+            recordLabel.Visible = true;
+            newRecordBeatLbl.Visible = false;
         }
 
         private void EnemiesSetUp()
@@ -291,7 +300,8 @@ namespace MD1_Solovjovs
             resultLabel.Visible = true;
             if (result == GameResult.WON)
             {
-                resultLabel.Text = "YOU WON";
+               
+                resultLabel.Text = "YOU WON"; 
                 MusicController.PlaySound("won.wav");
             }
             else
@@ -299,6 +309,12 @@ namespace MD1_Solovjovs
                 resultLabel.Text = "YOU LOST";
                 MusicController.PlaySound("lost.wav");
             }
+            int record = DataManager.GetRecord();
+            if (record < score)
+            {
+                newRecordBeatLbl.Visible = true;
+            }
+            DataManager.SaveScore(score);
         }
 
         private void yellowBtn_Click(object sender, EventArgs e)
