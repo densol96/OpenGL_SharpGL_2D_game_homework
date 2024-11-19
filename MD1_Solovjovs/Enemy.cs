@@ -71,7 +71,7 @@ namespace MD1_Solovjovs
                 }
             }
         }
-        private readonly int POS_Z = 0;
+        private static readonly int POS_Z = 0;
 
         private float speed;
         private int difficultyLevel = 1;
@@ -123,11 +123,11 @@ namespace MD1_Solovjovs
 
         private float MakeSpeedMoreRandom(float speed)
         {
-            // Want to make speed slightly more random with difficulty level + to make them come at different speed
+            // Want speed to be sligthly random at the same level + speed to increasy with level
             float minSpeed = speed + (difficultyLevel - 1) * 0.005f;
             float maxSpeed = minSpeed + difficultyLevel * 0.005f;
-            float randomSpeed = (float)(random.NextDouble() * (maxSpeed - minSpeed) + minSpeed);
-            return randomSpeed;
+            return (float)(random.NextDouble() * (maxSpeed - minSpeed) + minSpeed);
+            
         }
 
         private void RandomlySelectPosition()

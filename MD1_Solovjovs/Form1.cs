@@ -6,7 +6,6 @@ using System.Windows.Forms;
 
 namespace MD1_Solovjovs
 {
-
     enum GameResult
     {
         WON, LOST

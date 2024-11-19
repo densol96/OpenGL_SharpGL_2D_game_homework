@@ -1,5 +1,4 @@
-﻿using NAudio.Wave;
-using System;
+﻿using System;
 using System.Media;
 using System.Windows.Controls;
 
@@ -44,7 +43,6 @@ namespace MD1_Solovjovs
 
             };
             mediaElementForLoop.Play();
-
         }
     }
 }

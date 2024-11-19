@@ -11,7 +11,6 @@ namespace MD1_Solovjovs
         private static readonly Texture texture = new Texture();
         private static readonly string pathToTexture = "heart.png";
         
-
         private readonly float POS_X_START = -8.5f;
         private readonly float POS_Y_START = 5.5f;
         private readonly float size = 0.6f;
@@ -30,7 +29,7 @@ namespace MD1_Solovjovs
             half_size = size / 2;
         }
 
-        public void Render(int livesLeft = 5)
+        public void Render(int livesLeft)
         {
             gl.Enable(OpenGL.GL_TEXTURE_2D);
             gl.Enable(OpenGL.GL_BLEND);
