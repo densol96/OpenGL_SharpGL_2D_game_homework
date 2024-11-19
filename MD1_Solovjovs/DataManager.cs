@@ -7,19 +7,21 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace MD1_Solovjovs
 {
     public class DataManager
     {
         private static string connectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=|DataDirectory|Database1.mdf;Integrated Security=True";
-        //static string connectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\denis\source\repos\MD1_Solovjovs\MD1_Solovjovs\Database1.mdf;Integrated Security=True";
 
         static DataManager() {
-            AppDomain.CurrentDomain.SetData("DataDirectory", @"C:\Users\denis\source\repos\MD1_Solovjovs\MD1_Solovjovs\");
+            string exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            string projectRootDirectory = Directory.GetParent(Directory.GetParent(Directory.GetParent(exeDirectory).FullName).FullName).FullName;
+            AppDomain.CurrentDomain.SetData("DataDirectory", projectRootDirectory);
         }
 
-    public static int GetRecord()
+        public static int GetRecord()
         {
             string query = "SELECT * FROM Record";
             int record = 0;

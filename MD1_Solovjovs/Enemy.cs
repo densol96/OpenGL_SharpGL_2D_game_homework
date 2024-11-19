@@ -124,8 +124,8 @@ namespace MD1_Solovjovs
         private float MakeSpeedMoreRandom(float speed)
         {
             // Want to make speed slightly more random with difficulty level + to make them come at different speed
-            float minSpeed = speed + (difficultyLevel - 1) * 0.015f;
-            float maxSpeed = minSpeed + difficultyLevel * 0.015f;
+            float minSpeed = speed + (difficultyLevel - 1) * 0.005f;
+            float maxSpeed = minSpeed + difficultyLevel * 0.005f;
             float randomSpeed = (float)(random.NextDouble() * (maxSpeed - minSpeed) + minSpeed);
             return randomSpeed;
         }

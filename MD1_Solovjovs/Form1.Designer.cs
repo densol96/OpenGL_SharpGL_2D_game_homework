@@ -233,7 +233,7 @@ namespace MD1_Solovjovs
             // 
             this.newRecordBeatLbl.AutoSize = true;
             this.newRecordBeatLbl.Font = new System.Drawing.Font("Consolas", 35F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.newRecordBeatLbl.Location = new System.Drawing.Point(455, 343);
+            this.newRecordBeatLbl.Location = new System.Drawing.Point(472, 150);
             this.newRecordBeatLbl.Name = "newRecordBeatLbl";
             this.newRecordBeatLbl.Size = new System.Drawing.Size(362, 55);
             this.newRecordBeatLbl.TabIndex = 7;
